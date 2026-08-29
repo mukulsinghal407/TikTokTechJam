@@ -200,6 +200,103 @@ track's info-gain (D6) matures or mode-split proves significant.
 
 ---
 
+## Playground — 시각화 도구 (`playground/`) / Playground — viz tool (`playground/`)
+
+> 대회 채점 대상 아님. `agent.py`를 가설별로 고칠 때 각 세션에서 agent가 어떻게 행동하고 메모리·검색
+> 정확도가 어떻게 달라지는지 눈으로 보는 로컬 도구. 공식 점수는 항상 `python -m evaluator.local_evaluator`.
+>
+> Not scored. A local tool for watching, per session, how the agent behaves and how its memory / retrieval
+> accuracy shift as we edit `agent.py`. Official scores always come from `python -m evaluator.local_evaluator`.
+
+### P1. 목적 = 세션별 행동 시각화 (데이터 구조 설명 아님) / Purpose = per-session behavior viz (not a data-structure explainer)
+
+- **맥락**: archive의 옛 demo는 "데이터가 어떻게 생겼나"를 보여주는 게 목적이었음. 재시작하며 목적을 바꿈.
+- **결정**: playground = (1) 선택한 agent를 세션마다 턴 단위로 재생, (2) 사이드바 3파트 — 어떤 유저 데이터인가
+  (agent가 보는 것 vs evaluator 전용) / 이 턴에 agent가 아는 것 (검색어·소진 속성·미공개 title 단어·전체 BM25
+  순위) / 도구 설명.
+- **재검토**: 버전 A/B 좌우 분할 비교 뷰는 다음 작업.
+
+**EN** — Context: the old archive demo existed to show "what the data looks like"; the restart changed the goal.
+Decision: playground = (1) replay the selected agent turn by turn per session, (2) a 3-part sidebar — what user
+data this is (agent-visible vs. evaluator-only) / what the agent knows this turn (query terms, exhausted
+attributes, undisclosed target-title words, full BM25 rank) / an about page. Re-review: the side-by-side A/B
+compare view is the next piece of work.
+
+### P2. evaluator 포크 금지 — import. `runner.py --check` 가 공식과 일치 보증 / No evaluator fork — import it; `runner.py --check` guarantees parity
+
+- **맥락**: 턴 단위 재생을 하려면 `evaluate()` 루프를 열어야 함. archive 옛 demo는 시뮬레이터 함수
+  (`intent_card`, `customer_reply` 등)를 통째로 복붙 → 원본 갱신 시 조용히 어긋날 위험.
+- **결정**: `runner.py` 가 evaluator 함수를 전부 **import** 하고 세션 루프만 분해. 복사 0.
+- **근거**: `python playground/runner.py --check` 가 200 public 세션의 hit·rank·집계점수를 공식 `evaluate()` 와
+  대조 (현재 일치). `runner.py` 를 고칠 때마다 통과시킬 것.
+
+**EN** — Context: turn-by-turn replay needs the `evaluate()` loop opened up; the old archive demo copy-pasted the
+simulator functions (`intent_card`, `customer_reply`, …), which drifts silently when upstream changes. Decision:
+`runner.py` imports every evaluator function and only decomposes the session loop; zero copies. Rationale:
+`python playground/runner.py --check` compares hit / rank / aggregate score over all 200 public sessions against
+the official `evaluate()` (currently matches); keep it passing whenever `runner.py` changes.
+
+### P3. agent 버전 = 이름 붙인 파일 + 드롭다운 / Agent versions = named files + dropdown
+
+- **결정**: 각 가설을 `playground/agents/*.py` 파일로. `baseline.py`(공식 starter 계측본, 고정 기준선),
+  `damin_start.py`(누적 BM25 + 속성 사다리 참고 구현), 이후 `vN_*.py`. UI 드롭다운에서 선택.
+- **규약**: 선택적 `LABEL`(표시명, 파일명이 id), `debug_state(session_id) -> dict`(agent 내부 상태 — 러너가
+  사이드바 Part 2로 그대로 전달; 권장 키 `memory_kind`·`query_scope`·`query_terms`·`exhausted_attributes`).
+
+**EN** — Decision: each hypothesis is a `playground/agents/*.py` file — `baseline.py` (instrumented official
+starter, fixed reference line), `damin_start.py` (cumulative BM25 + attribute ladder reference impl), then
+`vN_*.py`; selected from a UI dropdown. Convention: optional `LABEL` (display name; the file name is the id) and
+`debug_state(session_id) -> dict` (agent internals — the runner forwards it verbatim to sidebar Part 2; suggested
+keys `memory_kind`, `query_scope`, `query_terms`, `exhausted_attributes`).
+
+### P4. 정적 explorer 폐기 / Dropped the static explorer
+
+- **결정**: archive의 200세션 미리계산 정적 탐색기는 가져오지 않음. playground는 라이브 반복 도구이지 배포용
+  스냅샷이 아님.
+
+**EN** — Decision: the archive's precomputed 200-session static explorer is not carried over; playground is a
+live iteration tool, not a shareable snapshot.
+
+### P5. 수동 모드 = 사람이 agent 역할 (고객 아님) / Manual mode = the human plays the agent (not the customer)
+
+- **결정**: "내가 agent로" — 사람이 `ask_attribute` 를 골라 던지고, 시뮬레이터(고객)가 공식 규칙대로 답한다.
+  추천 top10 은 누적 대화 BM25 로 자동 계산. 턴마다 "선택한 agent 자동" / "내가 수동" 을 섞을 수 있다.
+- **근거**: 코드로 넣기 전에 질문 전략을 손으로 시험. 자연어 질문 문장은 데모용 — 시뮬레이터는 `ask_attribute`
+  만 읽는다([[project-tiktok-hackathon]] F1).
+
+**EN** — Decision: "Ask as the agent" — the human picks `ask_attribute` and asks; the simulator (customer)
+replies by the official rules. The top-10 is auto-computed by BM25 over the accumulated conversation. Each turn
+you can mix "run the selected agent" and "ask manually". Rationale: test a questioning strategy by hand before
+coding it; the free-text question is cosmetic — the simulator reads only `ask_attribute`.
+
+### P6. UI 영어 단일 / UI is English-only
+
+- **맥락**: 팀 공유·시연 대상이 국제 팀원.
+- **결정**: UI 및 백엔드가 노출하는 문자열 전부 영어. Part 3 설명도 영어 단일(한/영 토글 제거). 코드 주석은
+  한국어 유지.
+
+**EN** — Context: the team and the demo audience are international. Decision: every user-facing string (UI and
+backend) is English; the Part 3 explainer is English-only (the KR/EN toggle was removed). Code comments stay
+Korean.
+
+### P7. playground 를 레포 루트 키트에 얹음 (자기완결 복사본 X) / playground rides the repo-root kit (no self-contained copy)
+
+- **맥락**: 팀 레포가 비었을 때 "playground/ 안에 evaluator·starter 까지 전부 자기완결" 로 결정. 그 직후 팀원이
+  참가자 키트를 레포 루트에 커밋.
+- **결정**: 번복. `playground/runner.py`·`server.py` 가 실행 시 레포 루트를 `sys.path` 에 올려 루트
+  `evaluator/`·`starter/`·`data/` 를 import. 키트 사본 0.
+- **근거**: 채점 권위 파일이 두 벌이면 어긋난다. 팀 agent 가 루트에 생기면 `playground/agents/main.py` 에
+  `from starter.agent import Agent; LABEL = "main"` 두 줄이면 드롭다운에 뜬다.
+
+**EN** — Context: with the team repo empty, the call was "self-contained under `playground/`, evaluator and
+starter included". A teammate then committed the participant kit at the repo root. Decision: reversed —
+`playground/runner.py` / `server.py` put the repo root on `sys.path` at startup and import the root
+`evaluator/`, `starter/`, `data/`; zero copies of the kit. Rationale: two copies of the scoring authority drift.
+Once there's a team agent at the root, a two-line shim in `playground/agents/main.py`
+(`from starter.agent import Agent; LABEL = "main"`) puts it in the dropdown.
+
+---
+
 ## 참고자료 (외부) / External references
 
 | 주제 / topic | 자료 / source |
