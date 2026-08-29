@@ -83,7 +83,8 @@ class Agent:
     ) -> dict:
         if session_id not in self._sessions:
             raise RuntimeError("reset must be called before respond")
-        unique_terms = list(dict.fromkeys(_terms(user_message)))[:40]
+        #Add an intent override here
+        unique_terms = list(dict.fromkeys(_terms(user_message)))[:40] #do we only want to take the first 40 unique terms? or do we want to take the top 40 most relevant terms?
         expression = " OR ".join(f'"{term}"' for term in unique_terms)
         if not expression:
             recommendations: list[dict] = []

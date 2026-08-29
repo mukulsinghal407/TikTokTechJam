@@ -29,3 +29,8 @@ coverage/
 # Misc
 *.tmp
 data/catalog.jsonl
+venv/
+
+results.json
+
+*__pycache__/**
