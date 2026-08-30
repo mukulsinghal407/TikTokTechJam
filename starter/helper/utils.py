@@ -1,5 +1,7 @@
 import re
 
+from starter.helper.config import TOKEN_RE, STOPWORDS
+
 # 시뮬레이터 신호 감지 (v2_1 override / v2_4 H5 소진).
 # Simulator-signal detection (v2_1 override / v2_4 H5 exhaustion).
 _OVERRIDE_RE = re.compile(r"ignore my earlier|actually,?\s*(?:ignore|instead)", re.I)
