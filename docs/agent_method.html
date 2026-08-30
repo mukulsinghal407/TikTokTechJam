@@ -1,0 +1,487 @@
+<title>TechJam Shopping Agent</title>
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#000000;
+    --ink-soft:#3a3a3a;
+    --rule:#000000;
+    --hair:#c9c9c9;
+    --serif:"Times New Roman", Times, "Liberation Serif", "Nimbus Roman", serif;
+    --mono:"SF Mono", ui-monospace, "Consolas", "Liberation Mono", Menlo, monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:19px;
+    line-height:1.5;
+    margin:0;
+    padding:40px 20px 80px;
+  }
+  .deck{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+
+  .slide{
+    border:1px solid var(--rule);
+    padding:56px 60px 56px;
+    min-height:72vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  .eyebrow{
+    font-variant:small-caps;
+    letter-spacing:.14em;
+    font-size:15px;
+    color:var(--ink-soft);
+    margin:0 0 26px;
+  }
+  .slide h1{
+    font-size:40px;font-weight:700;line-height:1.15;text-wrap:balance;margin:0 0 18px;
+  }
+  .slide h2{
+    font-size:29px;font-weight:700;line-height:1.2;text-wrap:balance;margin:0 0 22px;
+  }
+  .slide p{margin:0 0 15px;max-width:66ch}
+  .lead{font-size:22px}
+  .quote{
+    border-left:2px solid var(--ink);
+    padding-left:20px;
+    font-style:italic;
+    max-width:60ch;
+    margin:0 0 18px;
+  }
+  .num{
+    position:absolute;right:60px;bottom:52px;
+    font-variant:small-caps;letter-spacing:.1em;font-size:14px;color:var(--ink-soft);
+  }
+  .rev{
+    position:absolute;left:60px;bottom:52px;
+    letter-spacing:.06em;font-size:12.5px;color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+  .spacer{flex:1 1 auto;min-height:20px}
+
+  ul,ol{margin:0 0 15px;padding-left:1.3em;max-width:66ch}
+  li{margin:0 0 9px}
+  .tight li{margin:0 0 5px}
+  b,strong{font-weight:700}
+
+  .rule{border:none;border-top:1px solid var(--ink);margin:24px 0}
+  .hair{border:none;border-top:1px solid var(--hair);margin:18px 0}
+
+  .warn{
+    border:1.5px solid #c2410c;
+    background:#fff4ec;
+    color:#7c2d12;
+    padding:16px 20px;
+    margin:20px 0 4px;
+    max-width:66ch;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .warn .tag{
+    font-variant:small-caps;letter-spacing:.14em;font-weight:700;
+    font-size:14px;color:#c2410c;display:block;margin-bottom:6px;
+  }
+  .warn p{margin:0;max-width:none;color:#7c2d12}
+
+  .eq{
+    font-family:var(--serif);font-size:22px;text-align:center;margin:26px 0;line-height:1.7;
+  }
+  .eq.sm{font-size:19px;margin:18px 0}
+  .eq .v{font-style:italic}
+  .eq .op{margin:0 .32em}
+  .frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;margin:0 .22em}
+  .frac>span{padding:0 .45em}
+  .frac>.n{border-bottom:1px solid var(--ink)}
+  .strike{text-decoration:line-through;color:var(--ink-soft)}
+  .where{font-size:16px;color:var(--ink-soft);max-width:62ch;margin:12px auto 0;text-align:left}
+  .where p{margin:0 0 5px;max-width:none}
+  .where .v{font-style:italic}
+
+  table{border-collapse:collapse;width:100%;font-size:15.5px;margin:6px 0 16px}
+  caption{text-align:left;font-variant:small-caps;letter-spacing:.1em;font-size:13px;color:var(--ink-soft);margin-bottom:8px}
+  th,td{border-top:1px solid var(--hair);padding:7px 12px 7px 0;text-align:left;vertical-align:top}
+  thead th{border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);font-weight:700}
+  tbody tr:last-child td{border-bottom:1px solid var(--ink)}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;padding-right:16px}
+  .lead-col td:first-child,.lead-col th:first-child{padding-right:20px}
+
+  code{font-family:var(--mono);font-size:.82em}
+
+  .flow{margin:6px auto 4px;display:block;max-width:100%;height:auto}
+  .flow text{font-family:var(--serif);font-size:15px;fill:var(--ink)}
+  .flow .t2{font-size:12.5px;fill:var(--ink-soft)}
+  .flow rect{fill:var(--paper);stroke:var(--ink);stroke-width:1.4}
+  .flow path,.flow line{stroke:var(--ink);stroke-width:1.4;fill:none}
+  .flow polygon{fill:var(--ink)}
+
+  @media (max-width:640px){
+    body{font-size:17px;padding:16px 8px 40px}
+    .slide{padding:30px 22px 44px;min-height:0}
+    .slide h1{font-size:29px}
+    .slide h2{font-size:23px}
+    .num{right:22px;bottom:18px}
+    .rev{left:22px;bottom:18px;font-size:11px}
+    .eq{font-size:18px}
+  }
+  @media print{
+    body{padding:0;font-size:11pt}
+    .deck{gap:0;max-width:none}
+    .slide{border:none;min-height:100vh;page-break-after:always;padding:20mm 18mm}
+    .num{right:18mm;bottom:14mm}
+    .rev{left:18mm;bottom:14mm}
+  }
+</style>
+
+<div class="deck">
+
+  <!-- 1 -->
+  <section class="slide">
+    <p class="eyebrow">TikTok TechJam · Track 4 · Shopping Copilot</p>
+    <div class="spacer"></div>
+    <h1>Conversational Personalized Product Search</h1>
+    <p class="lead">Statistical modeling proposal, and what version 2.8 implements.</p>
+    <div class="spacer"></div>
+    <p style="font-size:17px">MAIn Insight</p>
+    <p style="color:var(--ink-soft);font-size:15px">Part one of two. Retrieval and rules only; no language model. Official scoring metrics are in Appendix A.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide">
+    <p class="eyebrow">What this document is</p>
+    <h2>The framework, and its realization</h2>
+    <p>We wrote a statistical proposal for this task. This deck restates it and marks, for each part, what version&nbsp;2.8 <b>implements</b>, what it <b>simplifies</b>, and what stays <b>open</b>.</p>
+    <p>The 200 public examples and the local evaluator are development feedback. They are not the objective. The objective is to turn our informal recommendation reasoning into variables and equations that can be measured, adjusted, and tested.</p>
+    <div class="spacer"></div>
+    <p style="color:var(--ink-soft);font-size:15px">Catalogue: 50,000 fixed clothing, shoes and jewellery items. The agent recommends only from it.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide">
+    <p class="eyebrow">Core design principle</p>
+    <h2>History is a bounded prior, not the answer</h2>
+    <p class="quote">Use history to improve the probability over plausible targets, but never spend so much personalization risk that an unresolved historical assumption removes an otherwise plausible product.</p>
+    <p>Correct history can improve early ranking. Conflicting history can push the target out of the top ten. So history earns ranking priority at most — never candidate exclusivity.</p>
+    <hr class="rule">
+    <p><b>Version 2.8 takes this to its limit.</b> Historical preference influences only <b>which question to ask</b>. It has no vote in the ranking, so it cannot remove a candidate.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide">
+    <p class="eyebrow">Statistical problem definition</p>
+    <h2>A belief that updates each turn</h2>
+    <p>Required information is revealed turn by turn, and stated preferences may later be revised. We treat the task as a sequential decision under time-varying evidence.</p>
+    <div class="eq">
+      <span class="v">P<sub>t</sub></span>(<span class="v">p</span>) <span class="op">=</span>
+      <span class="v">P</span>( target = <span class="v">p</span> <span class="op">|</span> <span class="v">E</span><sub>1:t</sub> <span class="op">,</span> <span class="v">H</span> <span class="op">,</span> <span class="v">C</span> )
+    </div>
+    <div class="where">
+      <p><span class="v">p</span> product &nbsp;·&nbsp; <span class="v">t</span> turn &nbsp;·&nbsp; <span class="v">E</span><sub>1:t</sub> evidence so far &nbsp;·&nbsp; <span class="v">H</span> historical preference &nbsp;·&nbsp; <span class="v">C</span> catalogue evidence</p>
+    </div>
+    <div class="eq sm">
+      action<sub>t</sub> <span class="op">=</span> ( Top-10<sub>t</sub> <span class="op">,</span> question<sub>t</sub> )
+    </div>
+    <p style="color:var(--ink-soft);font-size:15px">Version 2.8 represents this belief as a score and a ranking, not a normalized probability. Every turn still returns a full Top-10.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide">
+    <p class="eyebrow">Product ranking equation</p>
+    <h2>Which terms version 2.8 keeps</h2>
+    <p>The proposal's ranking score has five terms. Version 2.8 uses three.</p>
+    <div class="eq">
+      <span class="v">S<sub>t</sub></span>(<span class="v">p</span>) <span class="op">=</span>
+      <span class="v">S<sub>I</sub></span>
+      <span class="op">+</span> <span class="v">S<sub>C</sub></span>
+      <span class="op">+</span> &epsilon; <span class="v">S<sub>Q</sub></span>
+    </div>
+    <table class="lead-col">
+      <tbody>
+        <tr><td><span class="v" style="font-family:var(--serif)">S<sub>I</sub></span> &nbsp;intent relevance</td><td>BM25 over the accumulated conversation, weight 1.00</td></tr>
+        <tr><td><span class="v" style="font-family:var(--serif)">S<sub>C</sub></span> &nbsp;constraint satisfaction</td><td>weight 1.35, per constraint 1.35 firm / 0.85 soft — a score term, not a filter</td></tr>
+        <tr><td><span class="v" style="font-family:var(--serif)">S<sub>Q</sub></span> &nbsp;quality</td><td>weight 0.025 — a weak tie-breaker only</td></tr>
+      </tbody>
+    </table>
+    <p><b>Two terms are left out on purpose:</b></p>
+    <ul class="tight">
+      <li><span class="v" style="font-family:var(--serif)">&lambda;<sub>t</sub> S<sub>H</sub></span> — historical preference. History gets no vote in the ranking, so it can never remove a candidate. It is used only at the question step.</li>
+      <li><span class="v" style="font-family:var(--serif)">S<sub>V</sub></span> — verified violation. A product is never penalised for metadata it simply does not state.</li>
+    </ul>
+    <span class="num"></span>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide">
+    <p class="eyebrow">The agent · per-turn flow</p>
+    <h2>Five steps, every turn</h2>
+    <svg class="flow" viewBox="0 0 520 620" role="img" aria-label="Flowchart: reset, then a five-step loop over turns one to ten">
+      <rect x="150" y="12" width="220" height="42"/>
+      <text x="260" y="38" text-anchor="middle">reset( customer profile )</text>
+      <path d="M260 54 L260 82"/><polygon points="255,82 265,82 260,92"/>
+
+      <rect x="108" y="94" width="304" height="50"/>
+      <text x="260" y="115" text-anchor="middle">1 · Update state</text>
+      <text x="260" y="133" text-anchor="middle" class="t2">new evidence, replacements, overrides</text>
+      <path d="M260 144 L260 170"/><polygon points="255,170 265,170 260,180"/>
+
+      <rect x="108" y="182" width="304" height="50"/>
+      <text x="260" y="203" text-anchor="middle">2 · Retrieve candidates</text>
+      <text x="260" y="221" text-anchor="middle" class="t2">two BM25 routes · recall first</text>
+      <path d="M260 232 L260 258"/><polygon points="255,258 265,258 260,268"/>
+
+      <rect x="108" y="270" width="304" height="50"/>
+      <text x="260" y="291" text-anchor="middle">3 · Score candidates</text>
+      <text x="260" y="309" text-anchor="middle" class="t2">intent + constraint match + quality</text>
+      <path d="M260 320 L260 346"/><polygon points="255,346 265,346 260,356"/>
+
+      <rect x="108" y="358" width="304" height="50"/>
+      <text x="260" y="379" text-anchor="middle">4 · Select Top-10</text>
+      <text x="260" y="397" text-anchor="middle" class="t2">exploit by score · cover the unresolved</text>
+      <path d="M260 408 L260 434"/><polygon points="255,434 265,434 260,444"/>
+
+      <rect x="108" y="446" width="304" height="50"/>
+      <text x="260" y="467" text-anchor="middle">5 · Choose a question</text>
+      <text x="260" y="485" text-anchor="middle" class="t2">highest expected decision value, or none</text>
+      <path d="M260 496 L260 522"/><polygon points="255,522 265,522 260,532"/>
+
+      <rect x="120" y="534" width="280" height="42"/>
+      <text x="260" y="560" text-anchor="middle">return Top-10 + question</text>
+
+      <path d="M412 555 L470 555 L470 119 L412 119"/>
+      <polygon points="412,114 412,124 402,119"/>
+      <text x="486" y="340" class="t2" transform="rotate(90 486 340)">customer replies · turns 1–10</text>
+    </svg>
+    <p style="color:var(--ink-soft);font-size:15px">The loop ends when the target is found or after turn ten. The next five slides follow these labels.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide">
+    <p class="eyebrow">The agent · step 1</p>
+    <h2>1 · Update state</h2>
+    <p><b>Considered here:</b> is the new message a fresh constraint, a replacement of an earlier one, or an explicit "no preference"?</p>
+    <div class="eq sm">
+      state<sub>t</sub> <span class="op">=</span> Update( state<sub>t&minus;1</sub> <span class="op">,</span> message<sub>t</sub> )
+    </div>
+    <p>Each attribute holds one of four states. A replacement does not delete the old value — it marks it <code>SUPERSEDED</code> and the new one <code>ACTIVE</code>. On an override, the shown-list memory is cleared and superseded values are restored: in this simulator the replaced value still points toward the target.</p>
+    <table>
+      <tbody>
+        <tr><td><code>UNKNOWN</code></td><td>not mentioned yet</td><td><code>NO_PREFERENCE</code></td><td>customer has none</td></tr>
+        <tr><td><code>ACTIVE</code></td><td>a live requirement</td><td><code>SUPERSEDED</code></td><td>replaced, but kept</td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--ink-soft);font-size:15px">Proposal's <code>NEGATIVE</code> state is dropped — the simulator produces no negative requirements (slide 12).</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide">
+    <p class="eyebrow">The agent · step 2</p>
+    <h2>2 · Retrieve candidates</h2>
+    <p><b>Considered here:</b> which products could plausibly be the target? This step targets <b>recall</b>, not precision — the proposal separates the two.</p>
+    <ul class="tight">
+      <li>Two BM25 passes over the catalogue text: one <b>broad</b> (category plus everything disclosed), one <b>narrow</b> (firm constraints only). The better score per product is kept.</li>
+      <li>A product that was a strong candidate on an earlier turn but not shown is carried forward at <b>0.78&times;</b>. A previous miss is not a rejection.</li>
+      <li>A product already shown in the Top-10 is <b>held out on later turns</b> — it had its chance to convert. This hold-out is cleared when an intent override is detected, because a target shown <em>before</em> the override does not yet count as a hit.</li>
+      <li>No personalization enters retrieval.</li>
+    </ul>
+    <span class="num"></span>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide">
+    <p class="eyebrow">The agent · step 3</p>
+    <h2>3 · Score candidates</h2>
+    <p><b>Considered here:</b> the ranking equation from slide 5, with concrete weights.</p>
+    <div class="eq">
+      <span class="v">S<sub>t</sub></span>(<span class="v">p</span>) <span class="op">=</span>
+      <span class="v">r</span>
+      <span class="op">+</span>
+      1.35 <span style="font-size:1.05em">&Sigma;</span> <span class="v">w</span> &middot; <span class="v">m</span>
+      <span class="op">+</span>
+      0.025 <span class="v">Q</span>
+    </div>
+    <div class="where">
+      <p><span class="v">r</span> — BM25 relevance, scaled to 0–1. <span class="v">m</span> — fraction of a constraint's words found in the product text. <span class="v">w</span> — 1.35 firm, 0.85 soft. <span class="v">Q</span> — quality: <span class="v">0.65 &middot; rating/5 + 0.35 &middot; log-scaled review count</span>.</p>
+    </div>
+    <p>A constraint the product's metadata is silent on neither helps nor hurts it. <b>Nothing is filtered out at this step</b> — the proposal's hard filter becomes a soft term, so a candidate can only lose rank, never eligibility.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide">
+    <p class="eyebrow">The agent · step 4</p>
+    <h2>4 · Select Top-10</h2>
+    <p><b>Considered here:</b> how certain is the intent, and which attributes are still unresolved?</p>
+    <div class="eq sm">
+      certainty <span class="op">=</span>
+      0.16 &middot; (active) <span class="op">+</span> 0.18 &middot; (firm) <span class="op">+</span> 0.18 if category known
+    </div>
+    <div class="eq sm">
+      list value <span class="op">=</span> score
+      <span class="op">+</span> 0.12 &middot; (1 &minus; certainty) &middot; novelty
+    </div>
+    <p>When certainty is high, take the ten highest scores. When it is low, give a small bonus to products that <b>differ on the unresolved attributes</b> — so one wrong assumption cannot fill all ten slots. High ranks stay score-driven, to protect MRR.</p>
+    <p style="color:var(--ink-soft);font-size:15px">This is the proposal's Top-10 risk portfolio: exploitation plus coverage of unresolved hypotheses only — not generic diversity.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide">
+    <p class="eyebrow">The agent · step 5</p>
+    <h2>5 · Choose a question</h2>
+    <p><b>Considered here:</b> which single answer would most narrow the candidates, weighed against the cost of spending a turn.</p>
+    <div class="eq">
+      question<sub>t</sub> <span class="op">=</span>
+      argmax<sub style="font-style:italic">a</sub> &nbsp; <span class="v">VOI<sub>t</sub></span>(<span class="v">a</span>)
+    </div>
+    <div class="eq sm">
+      <span class="v">VOI</span> &asymp; information gain &times; decision impact
+      <span class="op">+</span> history importance
+      <span class="op">&minus;</span> turn cost
+      <span class="op">&minus;</span> redundancy
+    </div>
+    <p>Turn 1 is always an open question. Asking is optional — a full Top-10 is returned regardless. History importance is the only point where history enters the agent.</p>
+    <div class="warn">
+      <span class="tag">Being revised</span>
+      <p>This step is being revised by the team. How individual attributes are scored, and the open-question rule, are not yet fixed — the details are left out here on purpose.</p>
+    </div>
+    <span class="num"></span>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide">
+    <p class="eyebrow">Simplifications</p>
+    <h2>What version 2.8 leaves out, and why</h2>
+    <table class="lead-col">
+      <thead><tr><th>In the proposal</th><th>Version 2.8</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Historical utility <span class="v" style="font-family:var(--serif)">EMU = B &minus; &rho;R</span>, per-attribute gate, personalization risk budget</td><td>not built</td><td>history is kept out of ranking, so there is no personalization risk to budget</td></tr>
+        <tr><td><span class="v" style="font-family:var(--serif)">S<sub>C</sub></span> as a hard filter</td><td>soft score term</td><td>keeps "candidates survive unless contradicted" literally true</td></tr>
+        <tr><td><code>NEGATIVE</code> attribute state</td><td>dropped</td><td>the simulator produces no negative requirements</td></tr>
+        <tr><td>retrieval-vs-reranking personalization gradient</td><td>two-route retrieval</td><td>routes separate recall from precision without using history</td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--ink-soft);font-size:15px">The soft-term and route choices were checked by ablation — restoring the removed term did not improve the score. The history machinery was a design decision not to build.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide">
+    <p class="eyebrow">Invariants</p>
+    <h2>Held, and one open</h2>
+    <p><b>Held:</b> a full Top-10 every turn · a previous miss is not a rejection · explicit evidence dominates history · missing catalogue evidence is not a violation · the four states stay distinct · coverage protects only unresolved attributes · no scenario or generator logic anywhere.</p>
+    <hr class="rule">
+    <p><b>Open.</b> A product shown before an intent override is <em>detected</em> is held out by the no-repeat rule (step 2). If the override wording is not recognised, the target stays held out — on a held-out set with reworded overrides the override score falls from <b>0.80 to 0.24</b>. Override detection and this hold-out are being revised together.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide">
+    <p class="eyebrow">Results</p>
+    <h2>Where version 2.8 stands</h2>
+    <table>
+      <caption>TechnicalScore</caption>
+      <thead><tr><th>Test set</th><th class="n">Overall</th><th class="n">Buying</th><th class="n">Browsing</th><th class="n">Override</th><th class="n">Boundary</th></tr></thead>
+      <tbody>
+        <tr><td>public set — 200, tuned on this</td><td class="n">0.855</td><td class="n">0.87</td><td class="n">0.86</td><td class="n">0.80</td><td class="n">0.87</td></tr>
+        <tr><td>held-out, familiar phrasing — 300</td><td class="n">0.828</td><td class="n">0.84</td><td class="n">0.83</td><td class="n">0.79</td><td class="n">0.83</td></tr>
+        <tr><td>held-out, reworded overrides — 200</td><td class="n">0.487</td><td class="n">0.88</td><td class="n">0.81</td><td class="n">0.24</td><td class="n">&mdash;</td></tr>
+      </tbody>
+    </table>
+    <p><b>Stable</b> on new products with familiar phrasing — a 0.03 drop from the tuned set. <b>Weak</b> only where an intent override is reworded: the target is then blocked by the no-repeat rule. That path is being revised.</p>
+    <p style="color:var(--ink-soft);font-size:15px">Tuned and checked on the public 200 only. The private 800 sessions are unseen; the ranking constants come from public data and may not transfer exactly.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide">
+    <p class="eyebrow">Results · detail</p>
+    <h2>Where the score comes from</h2>
+    <table>
+      <caption>TechnicalScore = 0.50 HR + 0.30 MRR + 0.20 Efficiency</caption>
+      <thead><tr><th>Test set</th><th class="n">HR@10</th><th class="n">MRR</th><th class="n">MTTC</th><th class="n">Efficiency</th><th class="n">TS</th></tr></thead>
+      <tbody>
+        <tr><td>public set — 200</td><td class="n">1.000</td><td class="n">0.635</td><td class="n">2.79</td><td class="n">0.821</td><td class="n">0.855</td></tr>
+        <tr><td>held-out, familiar phrasing — 300</td><td class="n">0.973</td><td class="n">0.611</td><td class="n">3.07</td><td class="n">0.793</td><td class="n">0.828</td></tr>
+        <tr><td>held-out, reworded overrides — 200</td><td class="n">0.590</td><td class="n">0.332</td><td class="n">6.38</td><td class="n">0.462</td><td class="n">0.487</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <caption>public set, by scenario</caption>
+      <thead><tr><th>Scenario</th><th class="n">n</th><th class="n">HR@10</th><th class="n">MRR</th><th class="n">MTTC</th></tr></thead>
+      <tbody>
+        <tr><td>Buying</td><td class="n">80</td><td class="n">1.000</td><td class="n">0.653</td><td class="n">2.15</td></tr>
+        <tr><td>Browsing</td><td class="n">80</td><td class="n">1.000</td><td class="n">0.624</td><td class="n">2.54</td></tr>
+        <tr><td>Intent override</td><td class="n">30</td><td class="n">1.000</td><td class="n">0.568</td><td class="n">4.63</td></tr>
+        <tr><td>Boundary</td><td class="n">10</td><td class="n">1.000</td><td class="n">0.777</td><td class="n">4.40</td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--ink-soft);font-size:15px">Rank of the target when found, public set: rank&nbsp;1 — 52% · 2–3 — 15% · 4–5 — 14% · 6–10 — 19%. The MRR headroom is the 33% found below rank three.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide">
+    <p class="eyebrow">Appendix A · official scoring</p>
+    <h2>How the evaluator scores a run</h2>
+    <p style="font-size:16px">Per session: <span class="v" style="font-style:italic">Hit</span> = 1 if the target is in the returned top ten, else 0 &nbsp;·&nbsp; <span class="v" style="font-style:italic">Reciprocal Rank</span> = 1 / (rank of the target), or 0 &nbsp;·&nbsp; <span class="v" style="font-style:italic">Turn</span> = turn the target first appeared, or 11.</p>
+    <div class="eq sm">
+      <span class="v">HR</span> = <span class="frac"><span class="n">&Sigma; Hit</span><span><span class="v">N</span></span></span>
+      <span class="op">&nbsp;</span>
+      <span class="v">MRR</span> = <span class="frac"><span class="n">&Sigma; RR</span><span><span class="v">N</span></span></span>
+      <span class="op">&nbsp;</span>
+      <span class="v">MTTC</span> = <span class="frac"><span class="n">&Sigma; Turn</span><span><span class="v">N</span></span></span>
+      <span class="op">&nbsp;</span>
+      <span class="v">Efficiency</span> = <span class="frac"><span class="n">11 &minus; <span class="v">MTTC</span></span><span>10</span></span>
+    </div>
+    <div class="eq sm">
+      <span class="v">TechnicalScore</span> <span class="op">=</span>
+      0.50 <span class="v">HR</span> <span class="op">+</span> 0.30 <span class="v">MRR</span> <span class="op">+</span> 0.20 <span class="v">Efficiency</span>
+    </div>
+    <p style="color:var(--ink-soft);font-size:15px"><span class="v" style="font-style:italic">N</span> = number of sessions. Efficiency is clipped to [0, 1]. Scenario breakdowns are for analysis; scenario labels are never agent inputs.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide">
+    <p class="eyebrow">Appendix B · validation</p>
+    <h2>Testing for generalization, not just score</h2>
+    <p>The public score is development feedback, so the design is checked against inputs it was not tuned on.</p>
+    <table class="lead-col">
+      <thead><tr><th>Test</th><th>What it catches</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Held-out products, same profile style</td><td>overfitting to the specific 200 examples</td><td>run · 0.855 &rarr; 0.828</td></tr>
+        <tr><td>Reworded overrides</td><td>dependence on exact override wording</td><td>run · override 0.80 &rarr; 0.24</td></tr>
+        <tr><td>Profile shuffle</td><td>over-reliance on history — swap histories, keep the conversation</td><td>planned</td></tr>
+        <tr><td>Conflicting-history stress</td><td>congruent / neutral / conflicting history, deciding attribute withheld</td><td>planned</td></tr>
+        <tr><td>Popularity ablation</td><td>a shortcut through the quality term</td><td>planned</td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--ink-soft);font-size:15px">Official metrics are paired with per-turn diagnostics: does the target survive retrieval, is it in the Top-10 this turn, and how its rank moves before and after each disclosure.</p>
+    <span class="num"></span>
+  </section>
+
+</div>
+
+<script>
+  // 이 문서가 마지막으로 수정된 시각. 슬라이드 수정 시 이 값만 갱신.
+  // Last time this deck was edited. On any slide change, update just this string.
+  var REV = "2026-08-30 23:31 (+08)";
+  var slides = document.querySelectorAll(".slide");
+  slides.forEach(function (s, i) {
+    var r = document.createElement("span");
+    r.className = "rev";
+    r.textContent = "rev. " + REV;
+    s.appendChild(r);
+    var n = s.querySelector(".num");
+    if (n) n.textContent = (i + 1) + " / " + slides.length;
+  });
+</script>
