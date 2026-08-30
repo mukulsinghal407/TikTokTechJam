@@ -8,6 +8,7 @@ from pathlib import Path
 from collections import Counter
 from typing import Any
 
+from starter.intent import IntentTracker
 from starter.helper.config import *
 from starter.helper.dataclasses import Evidence, SessionState
 from starter.helper.utils import (_OVERRIDE_RE, _EXHAUST_RE, _JUDGMENT_RE, _REAL_ATTRS, _text, _terms, _dedupe, _fts_expression)
@@ -25,6 +26,7 @@ class Agent:
         self.sessions: dict[str, SessionState] = {}
         self.products: dict[str, dict[str, Any]] = {}
         self._build_index()
+        self.override_detector = IntentTracker()
 
         # 해석 가능한 노브 — 시나리오 특정 로직 없음.
         # Interpretable knobs — no scenario-specific logic.

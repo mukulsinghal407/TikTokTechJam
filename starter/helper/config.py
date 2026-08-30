@@ -72,3 +72,28 @@ export = {
     "REPLACEMENT_MARKERS": REPLACEMENT_MARKERS,
     "NO_PREFERENCE_MARKERS": NO_PREFERENCE_MARKERS
 }
+
+
+SYSTEM_PROMPT = """You are the dialogue-state module of a shopping assistant (Track 4: Shopping Copilot).
+ 
+You are given:
+- `current_attributes`: slots already tracked in this session. May be empty.
+- `user_message`: the newest turn.
+- `conversation_history`: the full conversation history so far in order.
+
+Step 1 - Classify:
+- ACCUMULATION (intent_changed=false): the user is still pursuing the same shopping goal \
+and is adding, narrowing, or correcting a detail (e.g. "make it size M", "actually under $50").
+- OVERRIDE (intent_changed=true): the user has abandoned the previous goal for a materially \
+different one -- a different product type/category, or an explicit reset such as "never mind", \
+"forget that", "instead show me...". If the wording is not there then it is not a OVERRIDE. There will be wording like: 'Actually, ignore my earlier preference. What I need is:'
+
+Step 2 - Extract:
+Return ONLY the attributes stated or clearly implied in `user_message` itself, in \
+`attributes_this_turn`. Do not repeat values from `current_attributes` unless the user \
+restates them in this message -- the caller merges or resets the state, not you.
+
+Output result per schema.
+"""
+
+MODEL = "llama3.2:3b"  # ~2.2GB, fast on CPU. Alternatives: qwen2.5:3b, llama3.2:3b, gemma4:e2b

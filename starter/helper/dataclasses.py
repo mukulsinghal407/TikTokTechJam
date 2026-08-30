@@ -2,6 +2,8 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any
 
+from pydantic import BaseModel
+
 @dataclass
 class Evidence:
     """대화에서 관측한 제약 하나. / One constraint observed from the conversation."""
@@ -34,7 +36,26 @@ class SessionState:
     # sticky: 직전 턴이 실제 제약을 냈는지. / sticky: did the last turn yield a real constraint.
     last_yielded: bool = False
 
+class TurnClassification(BaseModel):
+    intent_changed: bool                    # True = OVERRIDE, False = ACCUMULATION
+    confidence: float                       # 0.0-1.0
+    reasoning: str                          # one short sentence -- useful for your run/iteration log
+    all_updated_attributes: dict[str, str]      # all attributes tracked so far, including any new ones from this turn
+
+@dataclass
+class TokenUsage:
+    """Per-turn token counts, read straight off Ollama's response object."""
+    prompt_tokens: int
+    completion_tokens: int
+ 
+    @property
+    def total_tokens(self) -> int:
+        return self.prompt_tokens + self.completion_tokens
+ 
+
 export = {
     "Evidence": Evidence,
     "SessionState": SessionState,
+    "TurnClassification": TurnClassification,
+    "TokenUsage": TokenUsage
 }

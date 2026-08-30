@@ -38,3 +38,7 @@ data/catalog.jsonl
 # 로컬 실측 산출물 (재현 가능) / local eval outputs (reproducible)
 results*.json
 !docs/baseline_results.json
+
+jane_2.jsonl
+jane_testdata.jsonl
+synthetic_500.jsonl
