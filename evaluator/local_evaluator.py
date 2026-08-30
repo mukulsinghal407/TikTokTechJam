@@ -9,7 +9,7 @@ import uuid
 from collections import defaultdict
 from pathlib import Path
 
-from starter.agent import Agent
+from starter.agent_v2_8 import Agent
 
 
 MAX_TURNS = 10
