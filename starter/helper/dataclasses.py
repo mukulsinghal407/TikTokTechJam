@@ -35,6 +35,10 @@ class SessionState:
     last_ask: str | None = None
     # sticky: 직전 턴이 실제 제약을 냈는지. / sticky: did the last turn yield a real constraint.
     last_yielded: bool = False
+    # v2_8_4: 직전 응답에서 새로 공개된 차원들. / dimensions newly disclosed in the last reply.
+    last_grew: list[str] = field(default_factory=list)
+    # v2_8_4: 차원별 이번 턴 신규 evidence 개수 (깊이 신호). / new evidence count by dimension (depth signal).
+    last_growth_counts: dict[str, int] = field(default_factory=dict)
 
 class TurnClassification(BaseModel):
     intent_changed: bool                    # True = OVERRIDE, False = ACCUMULATION

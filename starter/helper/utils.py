@@ -4,7 +4,17 @@ from starter.helper.config import TOKEN_RE, STOPWORDS
 
 # 시뮬레이터 신호 감지 (v2_1 override / v2_4 H5 소진).
 # Simulator-signal detection (v2_1 override / v2_4 H5 exhaustion).
-_OVERRIDE_RE = re.compile(r"ignore my earlier|actually,?\s*(?:ignore|instead)", re.I)
+# v2_8_4_1: override 단어 확장 — start over / scratch that / changed my mind 추가.
+#   현재 evaluator 고정 템플릿엔 없는 표현 → public 200 회귀 0 실측 (TS 0.865801 동일).
+#   패러프레이즈된 override 를 놓칠 경우 대비한 리콜 확장. agent_v2_8 도 이 심볼을 import 함.
+# v2_8_4_1: widens override detection with three reset phrases. Absent from the fixed
+#   evaluator templates → zero measured change on public 200; hedges recall against
+#   paraphrased override messages. agent_v2_8 imports this symbol too.
+_OVERRIDE_RE = re.compile(
+    r"ignore my earlier|actually,?\s*(?:ignore|instead)"
+    r"|start over|scratch that|changed my mind",
+    re.I,
+)
 _EXHAUST_RE = re.compile(r"preference for\s+([a-z_]+)", re.I)
 _JUDGMENT_RE = re.compile(r"use your judgment|use your judgement", re.I)
 # H5 소진 감지 + sticky mining 대상. brand/budget 은 수율 0 이라 sticky 는 안 걸리지만,
