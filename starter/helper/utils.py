@@ -1,5 +1,6 @@
 import re
 
+from typing import Any
 from starter.helper.config import TOKEN_RE, STOPWORDS
 
 # 시뮬레이터 신호 감지 (v2_1 override / v2_4 H5 소진).
@@ -55,6 +56,18 @@ def _fts_expression(terms: list[str]) -> str:
             safe.append(f'"{term}"')
     return " OR ".join(safe)
 
+def product_text(product: dict[str, Any]) -> str:
+    return " ".join(
+        [
+            _text(product.get("title")),
+            _text(product.get("categories")),
+            _text(product.get("features")),
+            _text(product.get("details")),
+            _text(product.get("description")),
+            _text(product.get("store")),
+        ]
+    ).lower()
+
 export ={
     "_OVERRIDE_RE": _OVERRIDE_RE,
     "_EXHAUST_RE": _EXHAUST_RE,
@@ -64,4 +77,5 @@ export ={
     "_terms": _terms,
     "_dedupe": _dedupe,
     "_fts_expression": _fts_expression,
+    "product_text": product_text
 }

@@ -59,7 +59,18 @@ NO_PREFERENCE_MARKERS = (
     "doesn't matter", "does not matter", "use your judgment", "any is fine",
 )
 
-
+QUESTION_PROMPTS = {
+    "category": "What type of product are you looking for?",
+    "material": "Do you have a material preference?",
+    "color": "Do you have a color preference?",
+    "size": "Is there a size or fit requirement I should prioritize?",
+    "style": "What style or fit do you prefer?",
+    "brand": "Do you have a brand preference?",
+    "budget": "What budget range should I use?",
+    "feature": "Which product feature matters most to you?",
+    "use_case": "What will you mainly use it for?",
+    "other": "Is there another requirement that would help narrow this down?",
+}
 
 export = {
     "TOKEN_RE": TOKEN_RE,
@@ -70,30 +81,6 @@ export = {
     "STOPWORDS": STOPWORDS,
     "ATTRIBUTE_PATTERNS": ATTRIBUTE_PATTERNS,
     "REPLACEMENT_MARKERS": REPLACEMENT_MARKERS,
-    "NO_PREFERENCE_MARKERS": NO_PREFERENCE_MARKERS
+    "NO_PREFERENCE_MARKERS": NO_PREFERENCE_MARKERS,
+    "QUESTION_PROMPTS": QUESTION_PROMPTS
 }
-
-
-SYSTEM_PROMPT = """You are the dialogue-state module of a shopping assistant (Track 4: Shopping Copilot).
- 
-You are given:
-- `current_attributes`: slots already tracked in this session. May be empty.
-- `user_message`: the newest turn.
-- `conversation_history`: the full conversation history so far in order.
-
-Step 1 - Classify:
-- ACCUMULATION (intent_changed=false): the user is still pursuing the same shopping goal \
-and is adding, narrowing, or correcting a detail (e.g. "make it size M", "actually under $50").
-- OVERRIDE (intent_changed=true): the user has abandoned the previous goal for a materially \
-different one -- a different product type/category, or an explicit reset such as "never mind", \
-"forget that", "instead show me...". If the wording is not there then it is not a OVERRIDE. There will be wording like: 'Actually, ignore my earlier preference. What I need is:'
-
-Step 2 - Extract:
-Return ONLY the attributes stated or clearly implied in `user_message` itself, in \
-`attributes_this_turn`. Do not repeat values from `current_attributes` unless the user \
-restates them in this message -- the caller merges or resets the state, not you.
-
-Output result per schema.
-"""
-
-MODEL = "llama3.2:3b"  # ~2.2GB, fast on CPU. Alternatives: qwen2.5:3b, llama3.2:3b, gemma4:e2b

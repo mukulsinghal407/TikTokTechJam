@@ -55,11 +55,44 @@ class TokenUsage:
     @property
     def total_tokens(self) -> int:
         return self.prompt_tokens + self.completion_tokens
- 
+
+
+
+@dataclass(frozen=True)
+class RetrievalConfig:
+    candidate_limit: int = 400
+    route_limit: int = 200
+    exposure_decay: float = 0.0
+    feature_multiplier: float = 1.5
+
+
+@dataclass(frozen=True)
+class ScoringConfig:
+    semantic_weight: float = 1.0
+    explicit_match_weight: float = 1.35
+    quality_weight: float = 0.025
+
+
+@dataclass(frozen=True)
+class SelectionConfig:
+    coverage_strength: float = 0.12
+    uncertainty_threshold: float = 0.28
+    candidate_window: int = 80
+
+
+@dataclass(frozen=True)
+class QuestionPolicyConfig:
+    candidate_window: int = 50
+    min_branch_fraction: float = 0.08
+    min_discrimination: float = 0.16
 
 export = {
     "Evidence": Evidence,
     "SessionState": SessionState,
     "TurnClassification": TurnClassification,
-    "TokenUsage": TokenUsage
+    "TokenUsage": TokenUsage,
+    "QuestionPolicyConfig": QuestionPolicyConfig,
+    "SelectionConfig":SelectionConfig,
+    "RetrievalConfig":RetrievalConfig,
+    "ScoringConfig":ScoringConfig
 }
