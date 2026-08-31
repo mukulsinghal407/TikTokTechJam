@@ -115,8 +115,10 @@
   .flow text{font-family:var(--serif);font-size:15px;fill:var(--ink)}
   .flow .t2{font-size:12.5px;fill:var(--ink-soft)}
   .flow rect{fill:var(--paper);stroke:var(--ink);stroke-width:1.4}
+  .flow rect.dash{stroke-dasharray:5 4}
   .flow path,.flow line{stroke:var(--ink);stroke-width:1.4;fill:none}
   .flow polygon{fill:var(--ink)}
+  .flow text.mono{font-family:var(--mono);font-size:12.5px}
 
   @media (max-width:640px){
     body{font-size:17px;padding:16px 8px 40px}
@@ -168,7 +170,8 @@
     <p class="quote">Use history to improve the probability over plausible targets, but never spend so much personalization risk that an unresolved historical assumption removes an otherwise plausible product.</p>
     <p>Correct history can improve early ranking. Conflicting history can push the target out of the top ten. So history earns ranking priority at most — never candidate exclusivity.</p>
     <hr class="rule">
-    <p><b>Version 2.8 takes this to its limit.</b> Historical preference influences only <b>which question to ask</b>. It has no vote in the ranking, so it cannot remove a candidate.</p>
+    <p><b>Version 2.8 takes this to its limit:</b> historical preference influences only <b>which question to ask</b>. It has no vote in the ranking, so it cannot remove a candidate.</p>
+    <p><b>Version 2.8.4 removes that too.</b> The question policy no longer reads the profile — history now enters the agent at no point.</p>
     <span class="num"></span>
   </section>
 
@@ -211,7 +214,7 @@
     </table>
     <p><b>Two terms are left out on purpose:</b></p>
     <ul class="tight">
-      <li><span class="v" style="font-family:var(--serif)">&lambda;<sub>t</sub> S<sub>H</sub></span> — historical preference. History gets no vote in the ranking, so it can never remove a candidate. It is used only at the question step.</li>
+      <li><span class="v" style="font-family:var(--serif)">&lambda;<sub>t</sub> S<sub>H</sub></span> — historical preference. No vote in the ranking, so it can never remove a candidate. Version&nbsp;2.8 still used it to prioritise questions; version&nbsp;2.8.4 drops that, and history enters nowhere.</li>
       <li><span class="v" style="font-family:var(--serif)">S<sub>V</sub></span> — verified violation. A product is never penalised for metadata it simply does not state.</li>
     </ul>
     <span class="num"></span>
@@ -337,22 +340,42 @@
   <section class="slide">
     <p class="eyebrow">The agent · step 5</p>
     <h2>5 · Choose a question</h2>
-    <p><b>Considered here:</b> which single answer would most narrow the candidates, weighed against the cost of spending a turn.</p>
-    <div class="eq">
-      question<sub>t</sub> <span class="op">=</span>
-      argmax<sub style="font-style:italic">a</sub> &nbsp; <span class="v">VOI<sub>t</sub></span>(<span class="v">a</span>)
-    </div>
-    <div class="eq sm">
-      <span class="v">VOI</span> &asymp; information gain &times; decision impact
-      <span class="op">+</span> history importance
-      <span class="op">&minus;</span> turn cost
-      <span class="op">&minus;</span> redundancy
-    </div>
-    <p>Turn 1 is always an open question. Asking is optional — a full Top-10 is returned regardless. History importance is the only point where history enters the agent.</p>
-    <div class="warn">
-      <span class="tag">Being revised</span>
-      <p>This step is being revised by the team. How individual attributes are scored, and the open-question rule, are not yet fixed — the details are left out here on purpose.</p>
-    </div>
+    <p><b>Considered here:</b> is there enough in the conversation to justify a specific question, or should the agent keep eliciting openly? Settled at version&nbsp;2.8.4.</p>
+    <svg class="flow" viewBox="0 0 620 316" role="img" aria-label="Question policy: the open question is the default; two narrow exceptions branch off it">
+      <rect x="210" y="8" width="200" height="36"/>
+      <text x="310" y="31" text-anchor="middle">state, after this turn's message</text>
+      <path d="M310 44 L310 70"/><polygon points="305,70 315,70 310,80"/>
+
+      <rect x="70" y="82" width="320" height="42"/>
+      <text x="230" y="107" text-anchor="middle">a specific question is still narrowing?</text>
+      <path d="M390 103 L400 103"/><polygon points="400,98 400,108 410,103"/>
+      <text x="396" y="95" class="t2">yes</text>
+
+      <rect x="410" y="82" width="204" height="42"/>
+      <text x="512" y="100" text-anchor="middle">repeat that attribute</text>
+      <text x="512" y="116" text-anchor="middle" class="t2">keep mining it &mdash; "sticky"</text>
+
+      <path d="M230 124 L230 156"/><polygon points="225,156 235,156 230,166"/>
+      <text x="238" y="146" class="t2">no</text>
+
+      <rect x="70" y="168" width="320" height="52"/>
+      <text x="230" y="190" text-anchor="middle">one open answer just disclosed</text>
+      <text x="230" y="208" text-anchor="middle">&ge; 2 facts in one un-asked dimension?</text>
+      <path d="M390 194 L400 194"/><polygon points="400,189 400,199 410,194"/>
+      <text x="396" y="186" class="t2">yes</text>
+
+      <rect x="410" y="168" width="204" height="52"/>
+      <text x="512" y="190" text-anchor="middle">one attribute, chosen by</text>
+      <text x="512" y="208" text-anchor="middle">how the catalogue splits on it</text>
+
+      <path d="M230 220 L230 256"/><polygon points="225,256 235,256 230,266"/>
+      <text x="238" y="244" class="t2">no</text>
+
+      <rect x="150" y="268" width="260" height="44" style="stroke-width:2.6"/>
+      <text x="280" y="295" text-anchor="middle">the open question</text>
+    </svg>
+    <p>Turn one is always the open question, and it stays the default every turn after. A specific question that misses hands the choice straight back to it. No value-of-information search, no per-attribute prior, no profile.</p>
+    <p style="color:var(--ink-soft);font-size:15px">Appendix&nbsp;E gives the full order of checks; Appendix&nbsp;C, the 700-session evidence for staying open.</p>
     <span class="num"></span>
   </section>
 
@@ -469,12 +492,121 @@
     <span class="num"></span>
   </section>
 
+  <!-- 19 -->
+  <section class="slide">
+    <p class="eyebrow">Appendix C · question policy</p>
+    <h2>The open question dominates the simulator</h2>
+    <div class="warn">
+      <span class="tag">Candidate slide · pending review</span>
+      <p>An instrumentation result and its reading. Not yet folded into the main deck.</p>
+    </div>
+    <p>Every question across the public set and both held-out sets &mdash; 700 sessions &mdash; was logged with the target's rank before and after the answer. Expected rank improvement per question, a target that fell out of the ranked list counted as rank 500:</p>
+    <table>
+      <caption>expected rank gain per question asked</caption>
+      <thead><tr><th>Question</th><th class="n">Public</th><th class="n">Held-out, familiar</th><th class="n">Reworded overrides</th></tr></thead>
+      <tbody>
+        <tr><td>open &mdash; "anything else?"</td><td class="n">+147</td><td class="n">+131</td><td class="n">+45</td></tr>
+        <tr><td>material</td><td class="n">+9</td><td class="n">&minus;2</td><td class="n">&minus;7</td></tr>
+        <tr><td>feature</td><td class="n">+14</td><td class="n">&minus;48</td><td class="n">&minus;17</td></tr>
+      </tbody>
+    </table>
+    <p>The open question carries the turn. Every specific attribute question is net-neutral to negative on the held-out sets. Its returns also fall off fast &mdash; on the held-out set the 1st open question is worth about 180, the 2nd about 75, the 3rd about 15, the 4th and later nothing: the customer's constraint list is drained by the third turn.</p>
+    <p><b>An agent that only ever asks the open question scores 0.870 public, 0.848 held-out</b> &mdash; above version 2.8.</p>
+    <hr class="rule">
+    <p><b>The reading.</b> The simulator discloses up to two constraints per open question, ungated by attribute. Its customer holds a complete pre-written intent list and reads it out on request &mdash; so a specific question can only reorder what the open question already returns. Open elicitation is near-optimal here <em>because the customer is a cooperative oracle</em>.</p>
+    <p>A real vague-intent shopper is not. Asked "anything else?", they have nothing more to give. The brief's Proactive Guidance pillar &mdash; detect an over-broad candidate pool, narrow it by structured clarification &mdash; targets that case, and the local evaluator cannot reward it.</p>
+    <p style="color:var(--ink-soft);font-size:15px">Direction for part two: when the candidate pool stays broad after the constraint list is drained, switch from open elicitation to a discriminating question chosen to split the surviving candidates &mdash; a choice the shopper can answer with no prior preference. Not yet built.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 19 -->
+  <section class="slide">
+    <p class="eyebrow">Appendix D · code shape</p>
+    <h2>The agent as modules</h2>
+    <p>Constants, regexes, helper functions and the two dataclasses live in a shared <code>starter/helper/</code> package. What remains in <code>agent_v2_8_4_1.py</code> is only the <code>Agent</code> class — retrieval, scoring, and the question policy.</p>
+    <svg class="flow" viewBox="0 0 760 254" role="img" aria-label="Module map: both agent classes import the shared helper package; intent.py and its language model are imported only by agent_v2_8">
+      <rect x="8" y="40" width="182" height="52"/>
+      <text x="99" y="63" text-anchor="middle" class="mono">agent_v2_8_4_1.py</text>
+      <text x="99" y="81" text-anchor="middle" class="t2">class Agent</text>
+
+      <rect x="8" y="144" width="182" height="52"/>
+      <text x="99" y="167" text-anchor="middle" class="mono">agent_v2_8.py</text>
+      <text x="99" y="185" text-anchor="middle" class="t2">class Agent</text>
+
+      <rect x="300" y="12" width="252" height="212"/>
+      <text x="426" y="34" text-anchor="middle" class="t2">starter/helper/</text>
+      <rect x="318" y="46" width="216" height="40"/>
+      <text x="426" y="71" text-anchor="middle" class="mono">config.py</text>
+      <rect x="318" y="96" width="216" height="40"/>
+      <text x="426" y="121" text-anchor="middle" class="mono">utils.py</text>
+      <rect x="318" y="146" width="216" height="52"/>
+      <text x="426" y="168" text-anchor="middle" class="mono">dataclasses.py</text>
+      <text x="426" y="186" text-anchor="middle" class="t2">Evidence · SessionState</text>
+
+      <rect x="598" y="144" width="154" height="52" class="dash"/>
+      <text x="675" y="166" text-anchor="middle" class="mono">intent.py → ollama</text>
+      <text x="675" y="184" text-anchor="middle" class="t2">not imported by 2.8.4</text>
+
+      <path d="M190 66 L294 66"/><polygon points="294,61 294,71 304,66"/>
+      <path d="M190 170 L294 170"/><polygon points="294,165 294,175 304,170"/>
+      <path d="M99 196 L99 240 L675 240 L675 206"/><polygon points="670,206 680,206 675,196"/>
+      <text x="332" y="236" class="t2">agent_v2_8 only</text>
+    </svg>
+    <p style="color:var(--ink-soft);font-size:15px">Two deltas carried into the shared helpers: <code>_OVERRIDE_RE</code> gains three reset phrases (<code>start over</code>, <code>scratch that</code>, <code>changed my mind</code>); <code>SessionState</code> gains two sticky-depth fields. Both additive. The refactor is byte-identical to the flat build across 700 sessions.</p>
+    <div class="warn">
+      <span class="tag">deliberate exclusion</span>
+      <p>The language-model path is not an omission. Override detection stays on a regex so the agent runs offline and reproducibly — the final scoring box may disable network access.</p>
+    </div>
+    <span class="num"></span>
+  </section>
+
+  <!-- 20 -->
+  <section class="slide">
+    <p class="eyebrow">Appendix E · question policy in full</p>
+    <h2>The five checks, in order</h2>
+    <p>Evaluated top to bottom each turn; the first match returns. Four of the five paths end at the open question.</p>
+    <ol>
+      <li>The open question has not been asked yet &rarr; <b>open question</b> (turn one).</li>
+      <li>The last specific answer is still productive and that attribute is not exhausted &rarr; <b>ask it again</b> (sticky mining).</li>
+      <li>The last turn was a specific question that yielded nothing &rarr; <b>open question</b> — hand the axis choice back.</li>
+      <li>The last turn was not a productive open answer &rarr; <b>open question</b>.</li>
+      <li>A single dimension gained <b>two or more</b> new pieces of evidence this turn, was never asked, and is not exhausted &rarr; score the eligible dimensions by <code>_guarded_discrimination</code> over the candidates and return the <b>best one</b> — a single refinement. Otherwise &rarr; <b>open question</b>.</li>
+    </ol>
+    <p style="color:var(--ink-soft);font-size:15px">The catalogue only prioritises and sanity-checks an already-eligible dimension in check&nbsp;5; it never makes one eligible. Eligibility comes entirely from the conversation.</p>
+    <span class="num"></span>
+  </section>
+
+  <!-- 21 -->
+  <section class="slide">
+    <p class="eyebrow">Appendix F · constants</p>
+    <h2>The interpretable knobs</h2>
+    <p>Set once in the constructor, no scenario-specific branching. Three are inert in this build — kept as named constants rather than deleted.</p>
+    <table class="lead-col">
+      <thead><tr><th>Constant</th><th class="n">Value</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>candidate_limit</code></td><td class="n">400</td><td>cap on the ranked candidate pool, with headroom for no-repeat removals</td></tr>
+        <tr><td><code>route_limit</code></td><td class="n">200</td><td>rows pulled per BM25 route before the merge</td></tr>
+        <tr><td><code>semantic_weight</code></td><td class="n">1.00</td><td>weight on the normalised retrieval score</td></tr>
+        <tr><td><code>explicit_match_weight</code></td><td class="n">1.35</td><td>weight on constraint matches against product text and price</td></tr>
+        <tr><td><code>quality_weight</code></td><td class="n">0.025</td><td>weight on the rating × popularity prior</td></tr>
+        <tr><td><code>coverage_strength</code></td><td class="n">0.12</td><td>Top-10 bonus for signature novelty when intent is uncertain</td></tr>
+        <tr><td><code>feat_mult</code></td><td class="n">1.5</td><td>BM25 features-field multiplier (title ÷ √1.5); tuned — re-validate on hold-out</td></tr>
+        <tr><td><code>question_candidate_window</code></td><td class="n">50</td><td>top candidates inspected to build an attribute distribution</td></tr>
+        <tr><td><code>question_min_branch_frac</code></td><td class="n">0.08</td><td>minimum share for a value to survive the OTHER collapse in check&nbsp;5</td></tr>
+        <tr><td><code>exposure_decay</code></td><td class="n">0.0</td><td><span class="strike">multiplicative decay</span> — at 0 the no-repeat rule is a hard exclusion</td></tr>
+        <tr><td><code>question_min_discrimination</code></td><td class="n">0.16</td><td><span class="strike">not referenced</span> — leftover from the v2.8.1 gate</td></tr>
+        <tr><td><code>profile_importance</code></td><td class="n">—</td><td><span class="strike">computed, never read</span> — the question policy stopped using history at 2.8.4</td></tr>
+      </tbody>
+    </table>
+    <span class="num"></span>
+  </section>
+
 </div>
 
 <script>
   // 이 문서가 마지막으로 수정된 시각. 슬라이드 수정 시 이 값만 갱신.
   // Last time this deck was edited. On any slide change, update just this string.
-  var REV = "2026-08-30 23:31 (+08)";
+  var REV = "2026-08-31 23:22 (+08)";
   var slides = document.querySelectorAll(".slide");
   slides.forEach(function (s, i) {
     var r = document.createElement("span");
@@ -485,3 +617,5 @@
     if (n) n.textContent = (i + 1) + " / " + slides.length;
   });
 </script>
+
+</body></html>
