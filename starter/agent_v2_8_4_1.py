@@ -3,7 +3,7 @@ helper 모듈 기반. 상수·유틸·데이터클래스는 `starter/helper/{con
 이 파일은 Agent(retrieval + risk-gated 스코어링 + open_first/sticky 질문 정책)만 보유. LLM 미사용.
 
 한 줄: 시뮬레이터를 최소한으로 이용하는 원칙적 설계 + v1 에서 배운 두 레버(R7 / open question).
-       public_set 200 실측 TS 0.8658 / HitRate@10 1.000 / MTTC 2.81 / 토큰 0.
+       public_set 200 실측 TS 0.8658 / HitRate@10 1.000 / MRR 0.666 / MTTC 2.70 / 토큰 0.
        (agent_v1 0.820, damin_start 0.724, 원본 agent_v2 0.682)
 
 가설 검증 이력은 파일 하단 주석 참조. 상세 설계 결정은 `docs/decision_log.md`.
@@ -12,7 +12,7 @@ helper 모듈 기반. 상수·유틸·데이터클래스는 `starter/helper/{con
 Helper-module build: constants, utils, and dataclasses live in the shared
 `starter/helper/{config,utils,dataclasses}.py`; this file holds only the Agent
 (multi-route retrieval + risk-gated scoring + open_first/sticky question policy). No LLM.
-Measured on public_set 200: TS 0.8658 / HitRate@10 1.000 / MTTC 2.81 / 0 tokens.
+Measured on public_set 200: TS 0.8658 / HitRate@10 1.000 / MRR 0.666 / MTTC 2.70 / 0 tokens.
 Hypothesis-test history is in the bottom comment; design rationale in docs/decision_log.md.
 """
 from __future__ import annotations
@@ -633,19 +633,26 @@ class Agent:
 #          (_sigmoid, *_history 필드, Evidence.confidence/source_turn,
 #          NEGATIVE status 분기, NEGATION_MARKERS)
 #
-#   유지된 성분 (ablation 상 제거하면 손해): _quality_prior (−0.008),
-#   coverage portfolio (−0.005 — DI 가설과 달리 도움), explicit route (−0.007),
-#   carryover ×0.78 (−0.007), profile_importance (−0.006). −ALL = −0.022 (compound).
+#   ── 위 표는 v2.8 까지. v2.8.1~2.8.4 = 질문 정책 계보 (info-gain → open-primary
+#      → depth-gated refine). always-`other` 우선, v2.8.4 에서 동결. 상세: decision_log.md D9.
+#      이 파일 = v2.8.4.1 (v2.8.4 + `_OVERRIDE_RE` 리셋 표현 3개 추가).
 #
-#   현재 지표 (public 200): TS 0.855 / HR 1.000 (200/200) / MRR 0.635 / MTTC 2.79 / 토큰 0.
-#     시나리오별 MRR: buying .653 / browsing .624 / intent_override .568 / boundary .777.
-#     rank 분포: rank1 52% / 2-3 15% / 4-5 14% / 6-10 19% / miss 0%.
+#   유지된 성분 (v2.8 ablation, 제거하면 손해): _quality_prior (−0.008),
+#   coverage portfolio (−0.005 — DI 가설과 달리 도움), explicit route (−0.007),
+#   carryover ×0.78 (−0.007). profile_importance (v2.8 에선 −0.006) 는 v2.8.4 질문정책
+#   재작성 이후 미참조 → 이 파일에선 inert (reset 에서 계산만 하고 안 읽음).
+#
+#   현재 지표 (public 200, v2.8.4.1 실측): TS 0.8658 / HR 1.000 (200/200) /
+#   MRR 0.666 / MTTC 2.70 / Efficiency 0.83 / 토큰 0.
+#     시나리오별 MRR: buying .667 / browsing .648 / intent_override .701 / boundary .697.
+#     rank 분포: rank1 55% / 2-3 14% / 4-5 12% / 6-10 18% / miss 0%.
 #
 #   ⚠️ public 200 에만 튜닝·검증됨. private 800 미확인. HR 1.000 이 private 에서 유지될
 #      가능성은 낮다 (yield 분포·BM25 배수·sticky 임계 전부 public 실측 기반).
 #
 #   개선 후보:
-#     1. MRR — rank 4+ 그룹(33%). semantic rerank / 리랭킹 정밀도.
-#     2. 질문 순서 — info-gain 이 material 보다 brand/style 먼저 (HR 1.000 이라 이제 MTTC 만 깎음).
-#        문헌 순서(use_case/style/feature/color/material > brand/budget) 약한 tint 는 미검증.
-#     3. IO MRR 0.568 (평균 rank 3.27). MTTC 4.63 은 override_applied 게이트상 하한.
+#     1. MRR — rank 4+ 그룹(30%). semantic rerank / 리랭킹 정밀도.
+#     2. IO — MRR 0.701 / MTTC 4.67 (override_applied 게이트상 하한 부근).
+#     3. dead 심볼 정리: _normalized_entropy (미호출), question_min_discrimination
+#        (미참조), _profile_importance/_map_internal_to_ask (출력 미사용). Appendix F 에
+#        문서화됨 — 지금은 named symbol 로 남겨둠.
