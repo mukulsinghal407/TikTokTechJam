@@ -316,6 +316,16 @@ improve a confident user's answer accuracy) = "unverified + real-service hypothe
 **separately**. Real verification needs human subjects or an LLM-simulated user with a backtracking model → out of
 contest scope.
 
+### 4.6.6 한계 — target-present 가정 + 향후 aggressive-clarification 레버 / Limitation — target-present assumption + future aggressive-clarification lever
+
+- **가정**: 현재 벤치마크는 (a) 유저가 찾는 Target Product가 카탈로그에 존재하고 (b) 유저가 그 Target에 대응하는 latent intent/constraints를 이미 가진다. 이 가정 하에서는 open elicitation(`other`)이 결국 유용한 정보를 얻을 가능성이 매우 높다 → `other` 우선이 합리적 (decision_log D9).
+- **실제 commerce에서 깨질 수 있음**: 원하는 상품이 카탈로그에 없거나 / preference가 아직 형성되지 않았거나 / 조건끼리 충돌한다. 이때 반복적 open elicitation만으로는 부족하고, Agent가 candidate space를 적극 구분하고 trade-off를 제시하고 preference를 형성하도록 돕는 **더 공격적인 clarification 레버**가 필요하다.
+- **향후 (미구현, 다음 연구 항목)**: `AggressiveClarification_t = f( CandidateAmbiguity, RepeatedOpenFailure, NoGoodCandidate, ConstraintConflict )`. 트리거 신호 — `other`를 물어도 정보가 안 나옴 / top candidates가 계속 비슷비슷해 구별 불가 / 조건 만족 상품이 카탈로그에 희소 / 조건 충돌 / 유저가 "잘 모르겠다". 이때 "소재와 내구성 중 어느 쪽이 더 중요한가요?"처럼 **이미 가진 preference를 캐는 게 아니라 preference/trade-off를 형성하도록 돕는** 질문. 구현 형태 = info-gain으로 판별 축만 고르고 질문을 열린질문에서 **contrastive A/B**("첼시 vs 워커?")로 전환, 후보에서 뽑은 구체 옵션 2개, 소프트 리랭킹(하드 prune 아님). agent_method 슬라이드 Appendix C 참조.
+- **로컬 evaluator가 시험 안 함**: 시뮬 `customer_reply`는 `ask_attribute` enum만 읽고 message 텍스트를 무시 → contrastive 질문의 이점은 실유저/LLM 경로에서만 발생, 로컬 점수 영향 0. 따라서 지금 구현 안 하고 명시적 boundary로 남긴다.
+- **정직한 경계**: v2.8.4는 "known latent intent를 효율적으로 uncover하는 Agent"로는 좋은 방향이다. "intent가 불완전하거나 feasible target이 없는 실제 shopping 상황"까지 해결했다고 주장하면 안 된다.
+
+**EN** — **Assumption**: the current benchmark guarantees (a) the target product is in the catalogue and (b) the user already holds latent intent/constraints tied to that target. Under this assumption, open elicitation (`other`) is very likely to yield useful information eventually → `other`-first is the rational default (decision_log D9). **May break in real commerce**: the wanted product may not be in the catalogue, the preference may not be formed yet, or the stated conditions may conflict. Then repeated open elicitation is not enough — the agent needs a more aggressive clarification lever that actively partitions the candidate space, surfaces trade-offs, and helps the user *form* a preference. **Future (not built, next research item)**: `AggressiveClarification_t = f(CandidateAmbiguity, RepeatedOpenFailure, NoGoodCandidate, ConstraintConflict)`. Trigger signals — `other` stops yielding / the top candidates stay indistinguishable / few catalogue items satisfy the constraints / the constraints conflict / the user says "I don't know". Then ask a question that helps *form* a preference or trade-off rather than one that mines an existing one ("which matters more, material or durability?"). Implementation: use info-gain only to pick the discriminating axis, then switch the question format from an open question to a **contrastive A/B** ("Chelsea or combat boot?") with two concrete options drawn from the live candidates, applied as a soft rerank (not a hard prune). See agent_method deck Appendix C. **Not tested locally**: the simulator's `customer_reply` reads only the `ask_attribute` enum and ignores message text, so a contrastive question's benefit appears only on the real/LLM path and has zero effect on the local score — hence left as an explicit boundary rather than built now. **Honest boundary**: v2.8.4 is a good direction as *an agent that efficiently uncovers a known latent intent*; it must not claim to have solved *real shopping where intent is incomplete or no feasible target exists*.
+
 ## 4.7 정성 트랙 실험 설계 / Qualitative-track experiment design
 
 ### 매트릭스 / matrix (`damin_v1.py`, env `DAMIN_V1_STRATEGY`) — damin_start 코어 기준 / on the damin_start core
@@ -435,6 +445,12 @@ held-out split — the 3 rules in §2.
   안 받으면 `open_first` 턴1 효과가 사라짐 → 순수 퍼널로 fallback (코드에서 상수 교체). / if the private
   simulator does not treat `other` as a wildcard, the turn-1 effect disappears → fall back to a pure funnel (swap
   a constant).
+- **target-present 가정 / target-present assumption**: 질문 정책이 "유저가 이미 완결된 latent intent를 가짐"에
+  의존 (§4.6.6, D9). private 유저도 실구매 기록 기반이라 이 가정은 성립하나, 실 commerce로 일반화 주장은 금지 —
+  intent 불완전·feasible target 부재 상황용 aggressive-clarification 레버는 미구현 다음 항목. / the question
+  policy leans on "the user already holds a complete latent intent" (§4.6.6, D9); it holds for the private set
+  (real purchase records) but must not be generalized to real commerce — the aggressive-clarification lever for
+  incomplete intent / no feasible target is an unbuilt next item.
 - **intent_override 조기 노출 / early exposure in intent_override**: `open_first`가 곧 취소될 soft 선호를
   일찍 문맥에 넣음. 단 그 선호는 턴 1 프롬프트에 이미 있어 영향 작음 — 시나리오별 지표로 확인 (현재 IO HR
   0.97, 문제 없음). / `open_first` puts a soon-to-be-cancelled soft preference into context early, but it is
@@ -464,3 +480,5 @@ held-out split — the 3 rules in §2.
 | 0 | baseline `starter/agent.py` | 0.107 | 0.125 | 0.068 | 9.81 | 재현 확인 / reproduced |
 | — | `damin_start` (참고 / ref) | 0.724 | 0.865 | 0.520 | 4.20 | — |
 | **1** | **R1·R3·R4·R7 + R2 감지·리셋 + R5 open_first + H5** | **0.820** | 0.970 | 0.578 | 2.90 | `agent_v1.py`. 감점·keep-top-N·greedy적응형 폐기 / demotion, keep-top-N, greedy-adaptive dropped |
+| v2.8 | 통계 모델링 재작성 (멀티라우트 BM25 + typed evidence + risk-gated score + coverage) / statistical rewrite | 0.855 | 1.000 | 0.635 | 2.79 | `agent_v2_8.py`. 별도 계보 (agent_v1 과 병렬). 상세: 파일 하단 표 |
+| v2.8.1–4 | 질문 정책 계보 (info-gain → open-primary → depth-gated refine). v2.8.4에서 멈춤 / question-policy line, stopped at v2.8.4 | ≈0.86 | 1.000 | ≈0.65 | ≈2.7 | `agent_v2_8_{1,3,4}.py`. `other` 우선 유지, decision_log **D9** / keep `other`-first, D9 |

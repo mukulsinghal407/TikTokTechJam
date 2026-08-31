@@ -200,6 +200,24 @@ track's info-gain (D6) matures or mode-split proves significant.
 
 ---
 
+## D9. 질문 정책 (v2.8.x 계보) — `other` 우선 유지, v2.8.4에서 멈춤 / Question policy (v2.8.x line) — keep `other`-first, stop at v2.8.4
+
+- **맥락**: v2.8 계보에서 질문 정책을 반복. info-gain (v2.8.1, Gini + `_guarded_discrimination`) → open-primary + minimal-admission specific (v2.8.3) → v2.8.4 (eligibility = "한 `other` 응답이 한 dimension에서 구체 evidence ≥2개 = 깊이 신호"일 때만 1회 refine). 700세션(public 200 + held-out mirror 300 + held-out reworded-override 200) 턴 단위 target-rank 계측.
+- **결정**: **턴 무관 `other` 우선(open elicitation) 유지. specific 질문은 대화 근거(그 dimension에 이미 공개된 제약 + 깊이 신호)가 있을 때만.** v2.8.4에서 **멈춘다** — 성공 REFINE과 실패 REFINE을 가르는 간단한 observable 레버가 이번 라운드에 안 나옴. coefficient·attribute별 prior·threshold를 더 넣으면 얻는 evidence < 늘어나는 complexity.
+- **근거 (실측, `scratchpad/rankdelta.py`)**:
+  - ExpGain/Ask (= P(useful)·E[rank gain|useful], target 이탈 = rank 500): `other` +45~+147 / material −7~+9 / feature −48~+14. `other`가 어떤 specific보다 15~70배.
+  - useful%: `other` ~78% vs material ~11% / color ~7%.
+  - Nth-`other` 수확체감: 1st ~180, 2nd ~75, 3rd ~15, **4th 이후 = useful 0% (전 데이터셋·전 변종)**. → `other` 3회 / 무수확 시 하드캡은 손해 0.
+  - always-`other` vs v2.8.3: public 0.870 vs 0.861, held-out mirror 0.848 vs 0.842. **단 reworded-override에선 v2.8.3이 +0.017** — override 미감지 시 `other` 한 턴마다 stale(override 전) 제약을 쿼리에 재장전(always-`other`의 2nd-`other` ExpGain −72), specific 이탈이 그 poison을 우연히 조절.
+  - v2.8.4 자체 분석 (public 200): specific 56회 중 material 5/30 useful, 초반 턴(1~3) 6/42, useful-`other` 직후 5/39 — 어느 조건도 "이 경우엔 specific이 성공한다"로 분리 안 됨.
+- **왜 `other`인가 (원칙, D4 강화)**: **현재 벤치마크 유저는 이미 특정 Target Product에 대응하는 shopping intent를 가지고 있고, 대화는 그 intent에 든 정보를 순차 공개하는 구조**다. 특정 attribute를 미리 추측할 근거가 부족할 때 user-directed elicitation(`other`)을 우선하는 것이 합리적이다.
+- **서사 (D4 유지)**: 턴1 `other`의 점수 이득 = "시뮬레이터 대리지표"(와일드카드가 턴을 안 버림). "열린 질문이 확신 유저의 응답 정확도를 높인다"(H1) = 검증 미완.
+- **재검토**: override 감지 수정(H7b) 후 always-`other` + 3회 캡을 재측정. override poison이 사라지면 always-`other`가 held-out에서도 앞설 가능성 → 그때 최종 질문 정책 확정. contrastive clarification(preference 형성형 A/B)은 PRD §4.6.6 — deferred, 다음 연구 항목.
+
+**EN** — Context: iterated the question policy across the v2.8 line — info-gain (v2.8.1, Gini + `_guarded_discrimination`) → open-primary with minimal-admission specific (v2.8.3) → v2.8.4 (eligibility only when one `other` reply shows ≥2 concrete evidence in a single dimension = a depth signal). Instrumented target-rank per turn over 700 sessions (public 200 + held-out mirror 300 + held-out reworded-override 200). Decision: **keep `other`-first open elicitation regardless of turn; ask a specific question only with conversational evidence (a disclosed constraint in that dimension plus a depth signal); stop at v2.8.4** — no simple observable lever separates a successful refinement from a failed one this round, and adding coefficients / per-attribute priors / thresholds costs more complexity than the evidence gained. Rationale (measured, `scratchpad/rankdelta.py`): expected rank gain per ask — `other` +45..+147, material −7..+9, feature −48..+14 (`other` is 15–70× any specific); useful-answer rate `other` ~78% vs material ~11%; the Nth `other` decays 1st ~180 / 2nd ~75 / 3rd ~15 / **4th+ = 0% useful on every set** (so a hard cap at 3 asks / first no-yield costs nothing); an always-`other` agent scores 0.870 public / 0.848 held-out (above v2.8.3's 0.861 / 0.842) **but loses by 0.017 on reworded overrides** because each `other` turn reloads pre-override constraints into the query when the override is not detected. v2.8.4's own analysis (public 200): of 56 specific asks, material was useful 5/30, early turns 6/42, right-after-a-useful-`other` 5/39 — nothing separates. **Why `other` (principle, strengthens D4)**: the current benchmark user already holds a shopping intent tied to a specific target product, and the dialogue is a sequential disclosure of the information inside that intent; when there is not enough evidence to pre-guess a specific attribute, user-directed elicitation (`other`) is the rational default. Narrative (unchanged from D4): the turn-1 `other` score gain is a "simulator proxy metric"; H1 (open questions raise a confident user's accuracy) is unverified. Re-review: after the H7b override-detection fix, re-measure always-`other` + a 3-ask cap; if the override poison is gone, always-`other` may also win on held-out → finalize the question policy then. Contrastive preference-forming clarification (A/B) is PRD §4.6.6 — deferred, next research item.
+
+---
+
 ## Playground — 시각화 도구 (`playground/`) / Playground — viz tool (`playground/`)
 
 > 대회 채점 대상 아님. `agent.py`를 가설별로 고칠 때 각 세션에서 agent가 어떻게 행동하고 메모리·검색
