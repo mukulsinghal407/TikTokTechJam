@@ -171,7 +171,7 @@
     <p>Correct history can improve early ranking. Conflicting history can push the target out of the top ten. So history earns ranking priority at most — never candidate exclusivity.</p>
     <hr class="rule">
     <p><b>Version 2.8 takes this to its limit:</b> historical preference influences only <b>which question to ask</b>. It has no vote in the ranking, so it cannot remove a candidate.</p>
-    <p><b>Version 2.8.4 removes that too.</b> The question policy no longer reads the profile — history now enters the agent at no point.</p>
+    <p><b>Version 2.8.4 removes that too.</b> The question policy no longer consults the profile — history now enters the agent at no point.</p>
     <span class="num"></span>
   </section>
 
@@ -251,7 +251,7 @@
 
       <rect x="108" y="446" width="304" height="50"/>
       <text x="260" y="467" text-anchor="middle">5 · Choose a question</text>
-      <text x="260" y="485" text-anchor="middle" class="t2">highest expected decision value, or none</text>
+      <text x="260" y="485" text-anchor="middle" class="t2">the open question, with two exceptions</text>
       <path d="M260 496 L260 522"/><polygon points="255,522 265,522 260,532"/>
 
       <rect x="120" y="534" width="280" height="42"/>
@@ -342,8 +342,8 @@
     <h2>5 · Choose a question</h2>
     <p><b>Considered here:</b> is there enough in the conversation to justify a specific question, or should the agent keep eliciting openly? Settled at version&nbsp;2.8.4.</p>
     <svg class="flow" viewBox="0 0 620 316" role="img" aria-label="Question policy: the open question is the default; two narrow exceptions branch off it">
-      <rect x="210" y="8" width="200" height="36"/>
-      <text x="310" y="31" text-anchor="middle">state, after this turn's message</text>
+      <rect x="220" y="8" width="180" height="36"/>
+      <text x="310" y="31" text-anchor="middle">the updated state</text>
       <path d="M310 44 L310 70"/><polygon points="305,70 315,70 310,80"/>
 
       <rect x="70" y="82" width="320" height="42"/>
@@ -365,8 +365,8 @@
       <text x="396" y="186" class="t2">yes</text>
 
       <rect x="410" y="168" width="204" height="52"/>
-      <text x="512" y="190" text-anchor="middle">one attribute, chosen by</text>
-      <text x="512" y="208" text-anchor="middle">how the catalogue splits on it</text>
+      <text x="512" y="190" text-anchor="middle">one attribute, chosen</text>
+      <text x="512" y="208" text-anchor="middle">by the catalogue split</text>
 
       <path d="M230 220 L230 256"/><polygon points="225,256 235,256 230,266"/>
       <text x="238" y="244" class="t2">no</text>
@@ -473,7 +473,7 @@
     <span class="num"></span>
   </section>
 
-  <!-- 16 -->
+  <!-- 17 -->
   <section class="slide">
     <p class="eyebrow">Appendix B · validation</p>
     <h2>Testing for generalization, not just score</h2>
@@ -492,7 +492,7 @@
     <span class="num"></span>
   </section>
 
-  <!-- 19 -->
+  <!-- 18 -->
   <section class="slide">
     <p class="eyebrow">Appendix C · question policy</p>
     <h2>The open question dominates the simulator</h2>
@@ -564,7 +564,7 @@
   <section class="slide">
     <p class="eyebrow">Appendix E · question policy in full</p>
     <h2>The five checks, in order</h2>
-    <p>Evaluated top to bottom each turn; the first match returns. Four of the five paths end at the open question.</p>
+    <p>Evaluated top to bottom each turn; the first match returns. Only two outcomes are not the open question: sticky mining (check&nbsp;2) and the single refinement (check&nbsp;5).</p>
     <ol>
       <li>The open question has not been asked yet &rarr; <b>open question</b> (turn one).</li>
       <li>The last specific answer is still productive and that attribute is not exhausted &rarr; <b>ask it again</b> (sticky mining).</li>
@@ -580,7 +580,7 @@
   <section class="slide">
     <p class="eyebrow">Appendix F · constants</p>
     <h2>The interpretable knobs</h2>
-    <p>Set once in the constructor, no scenario-specific branching. Three are inert in this build — kept as named constants rather than deleted.</p>
+    <p>The agent's tunable values — most set once in the constructor — with no scenario-specific logic anywhere. The three struck through no longer do anything, kept as named symbols rather than deleted.</p>
     <table class="lead-col">
       <thead><tr><th>Constant</th><th class="n">Value</th><th>Role</th></tr></thead>
       <tbody>
