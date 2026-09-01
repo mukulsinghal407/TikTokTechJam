@@ -58,45 +58,24 @@ git checkout semifinal
 
 ### Download the catalog
 
-The frozen 50,000-product catalog is **not** committed to this repo (it is large
-and read-only). Download it from the official **Participant Kit** release:
-
-> https://github.com/TechJam2026/techjam-conversational-search/releases/tag/participant-kit
-
-That release is the single source of the final, frozen competition data. It
-contains three assets:
-
-| Asset | What it is |
-|---|---|
-| `catalog.jsonl.gz` | The 50,000-product frozen catalog (Amazon Reviews 2023, `Clothing_Shoes_and_Jewelry`), gzip-compressed (~19 MB; ~58 MB unpacked) |
-| `SHA256SUMS` | SHA-256 checksums for `catalog.jsonl.gz` and `techjam-participant-kit.zip` |
-| `techjam-participant-kit.zip` | The full kit (catalog + starter package + checksums) as one archive |
-
-You only need `catalog.jsonl.gz`. From the repo root:
+The 50,000-product catalog is not committed to this repo (large, read-only).
+Download `catalog.jsonl.gz` from the challenge's participant kit release, verify
+it, and unpack it into `data/`:
 
 ```bash
-# 1. Download the catalog and the checksum file
 curl -L -O https://github.com/TechJam2026/techjam-conversational-search/releases/download/participant-kit/catalog.jsonl.gz
 curl -L -O https://github.com/TechJam2026/techjam-conversational-search/releases/download/participant-kit/SHA256SUMS
+shasum -a 256 -c SHA256SUMS --ignore-missing   # expect: catalog.jsonl.gz: OK
 
-# 2. Verify the download BEFORE unpacking (checksum is on the .gz, not the .jsonl)
-shasum -a 256 -c SHA256SUMS --ignore-missing
-#   expected: catalog.jsonl.gz: OK
-#   (07fd142631fd6b03e2b4d09988c3eb7d53720e9d57010c79db48eeaada50a8f8)
-
-# 3. Unpack into data/
 gzip -dk catalog.jsonl.gz
 mv catalog.jsonl data/catalog.jsonl
-
-# 4. Sanity check: 50000 lines
-wc -l data/catalog.jsonl
+wc -l data/catalog.jsonl                        # expect: 50000
 ```
 
-`.gitignore` already excludes `data/catalog.jsonl`, so it will not be committed.
-`data/public_set.jsonl` (200 labeled development sessions) is the only session
-data used here and **is** included in this repo. The 800 private evaluation
-sessions are held by the organizer and are not needed to reproduce the numbers
-below.
+`.gitignore` already excludes `data/catalog.jsonl`. `data/public_set.jsonl`
+(200 labeled development sessions) is included and is all that is needed to
+reproduce the numbers below; the held-out evaluation sessions are run by the
+organizer.
 
 ## Steps to Reproduce Our Results
 
