@@ -1,4 +1,4 @@
-# Shopping Copilot — Conversational Search & Recommendation Agent
+# 4. Shopping Copilot "TikTalk": AI Conversational Search and Recommendations
 
 TikTok TechJam 2026 · Track 4: Shopping Copilot
 
