@@ -1,7 +1,7 @@
 import re
 
 # ---------------------------------------------------------------------------
-# 설정 / Config
+# Config: regexes, ontologies, and canned question prompts shared across modules
 # ---------------------------------------------------------------------------
 
 
@@ -16,7 +16,7 @@ MATERIAL_RE = re.compile(
     re.I,
 )
 
-# 평가기가 허용하는 ask_attribute enum. / The ask_attribute enum the evaluator allows.
+# The ask_attribute enum the evaluator allows.
 ALLOWED_ATTRIBUTES = (
     "category", "material", "color", "size", "style",
     "brand", "budget", "feature", "use_case", "other",
@@ -31,7 +31,6 @@ STOPWORDS = {
     "attribute", "additional", "preference", "have", "dont", "don't",
 }
 
-# 내부 온톨로지는 평가기의 ask 온톨로지보다 세분화되어 있다.
 # The internal ontology is finer-grained than the evaluator's ask ontology.
 ATTRIBUTE_PATTERNS: dict[str, tuple[str, ...]] = {
     "size": ("size", "sizing", "wide", "narrow", "width", "small", "medium", "large",
@@ -48,12 +47,12 @@ ATTRIBUTE_PATTERNS: dict[str, tuple[str, ...]] = {
     "budget": ("budget", "price", "under", "below", "less than", "$"),
 }
 
-# "이전 선호를 교체" 신호. / Signals that a previous preference is being replaced.
+# Signals that a previous preference is being replaced.
 REPLACEMENT_MARKERS = (
     "actually", "instead", "ignore my earlier", "ignore the earlier",
     "rather", "change", "what i need is", "what i really need",
 )
-# "이 속성에는 선호가 없음" 신호. / Signals "no preference on this attribute".
+# Signals "no preference on this attribute".
 NO_PREFERENCE_MARKERS = (
     "don't have a preference", "do not have a preference", "no preference",
     "doesn't matter", "does not matter", "use your judgment", "any is fine",
@@ -70,17 +69,4 @@ QUESTION_PROMPTS = {
     "feature": "Which product feature matters most to you?",
     "use_case": "What will you mainly use it for?",
     "other": "Is there another requirement that would help narrow this down?",
-}
-
-export = {
-    "TOKEN_RE": TOKEN_RE,
-    "MONEY_RE": MONEY_RE,
-    "COLOR_RE": COLOR_RE,
-    "MATERIAL_RE": MATERIAL_RE,
-    "ALLOWED_ATTRIBUTES": ALLOWED_ATTRIBUTES,
-    "STOPWORDS": STOPWORDS,
-    "ATTRIBUTE_PATTERNS": ATTRIBUTE_PATTERNS,
-    "REPLACEMENT_MARKERS": REPLACEMENT_MARKERS,
-    "NO_PREFERENCE_MARKERS": NO_PREFERENCE_MARKERS,
-    "QUESTION_PROMPTS": QUESTION_PROMPTS
 }
