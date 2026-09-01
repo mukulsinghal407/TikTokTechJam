@@ -50,10 +50,12 @@ the four challenge pillars:
 Python 3.10 or later (tested on 3.14). No third-party packages — the agent and
 evaluator use only the standard library.
 
+> [!IMPORTANT]
+> The `main` branch contains the final version of the agent and should be used for evaluation.
+
 ```bash
 git clone <this-repo-url>
 cd TikTokTechJam
-git checkout semifinal
 ```
 
 ### Download the catalog
@@ -160,3 +162,20 @@ Team **MAIn Insight** — five members (anonymized).
 
 The catalog and sessions derive from the Amazon Reviews 2023 dataset (McAuley
 Lab, UCSD). See `DATA_ATTRIBUTION.md` before using or redistributing the data.
+
+## Recommendation Flow
+
+```mermaid
+flowchart LR
+    U["User Message"] --> SM["State Update"]
+    SM --> R["Candidate Retrieval"]
+    R --> S["Candidate Scoring"]
+    S --> K["Risk-Aware Top-K Selection"]
+    K --> REC["Recommendations"]
+
+    S --> Q["Question Policy"]
+    Q --> ASK["Next Question"]
+
+    REC --> OUT["Response"]
+    ASK --> OUT
+```
