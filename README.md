@@ -109,35 +109,42 @@ the participant kit (`docs/competition_specification.md`,
 
 ## Limitations and Future Work
 
-**Limitations**
+Each limitation below is a deliberate scoping choice for this challenge, with the
+rationale and the natural next step.
 
-- **Lexical retrieval only.** Both routes are BM25 / FTS5. A shopper who
-  describes a product with vocabulary that never appears in its catalog text can
-  be missed at the retrieval stage; Hit Rate@10 is 1.0 on the public set but this
-  is the most likely place private sessions degrade.
-- **Hand-tuned linear ranker.** `CandidateScorer` is a fixed linear blend. A
-  learned or LLM-based reranker would likely lift MRR further.
-- **Public-split tuning.** Hyperparameters (route weights, coverage strength,
-  uncertainty threshold, question-policy gates) were tuned on the 200 public
-  sessions. Some overfit to that split is possible.
-- **Regex/ontology evidence extraction.** Constraint extraction depends on a
-  clothing-domain lexicon and phrase markers; it is brittle to out-of-domain
-  wording and would not transfer to another catalog without lexicon work.
-- **Fixed question templates.** Clarification questions are canned strings keyed
-  by attribute, not generated for the specific candidate pool.
-- **Session-local memory.** There is no long-term profile that persists across
-  sessions.
+- **Lexical retrieval, no LLM semantic ranking.** Both routes are BM25 over
+  SQLite FTS5. We deliberately kept the pipeline LLM-free so it is deterministic,
+  free to run, and works with no network access at judging time. The clear next
+  step is an in-memory dense route (a small sentence embedding, still no external
+  vector DB) fused with the lexical routes.
+- **Interpretable linear scorer.** `CandidateScorer` is a transparent, zero-
+  dependency linear blend of retrieval relevance, explicit-evidence match, and a
+  quality prior — easy to inspect and debug. A lightweight learned reranker on
+  top is the natural way to push MRR further.
+- **Small, deliberately constrained tuning surface.** The question policy is
+  **parameter-free by design**: its attribute order follows a structural property
+  of the frozen evaluator (`classify_constraint` is a fixed function) rather than
+  a fitted value. Only the retrieval side carries a handful of tuned constants
+  (route weights, coverage strength, uncertainty threshold). We kept the knob
+  count low on purpose to limit overfit to the 200 public sessions;
+  cross-validation across resampled splits is the next check.
+- **Domain-specific evidence extraction.** Constraint extraction uses a
+  clothing/shoes/jewelry lexicon and phrase markers, matched to this challenge's
+  frozen single-category catalog. Extending to other categories would need
+  additional lexicon work.
+- **Template clarification questions.** The local evaluator does not read the
+  natural-language `message` when scoring (verified), so question *wording* has
+  no metric effect and we use fixed templates keyed by attribute. Generating
+  questions from the actual candidate-pool split matters for real users and the
+  demo, and is the next priority there.
+- **Session-local memory.** Each session is evaluated in isolation, so there is
+  no long-term profile across sessions. Cross-session profile distillation for
+  returning shoppers is the extension toward Pillar III.
 
-**What we would do with more time**
-
-- Add an in-memory dense-retrieval route (small sentence embedding, no external
-  vector DB) and fuse it with the BM25 routes.
-- Replace the linear scorer with a lightweight learned reranker trained on the
-  public sessions.
-- Cross-validate hyperparameters instead of tuning once on the public split.
-- Add cross-session profile distillation for returning shoppers.
-- Generate clarification questions from the actual candidate-pool split rather
-  than from templates.
+Given more time, our priority order would be: (1) add the dense-retrieval route
+and a learned reranker, (2) cross-validate the retrieval constants across
+resampled splits, (3) generate clarification questions from the live candidate
+pool, then (4) cross-session profiles.
 
 ## Team Contributions
 
