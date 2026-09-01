@@ -58,19 +58,45 @@ git checkout semifinal
 
 ### Download the catalog
 
-The 50,000-product catalog is distributed as a GitHub Release attachment, not in
-this repo.
+The frozen 50,000-product catalog is **not** committed to this repo (it is large
+and read-only). Download it from the official **Participant Kit** release:
 
-1. Download `catalog.jsonl.gz` from the participant kit release.
-2. Verify it against the published `SHA256SUMS`.
-3. Unpack it to `data/catalog.jsonl`:
+> https://github.com/TechJam2026/techjam-conversational-search/releases/tag/participant-kit
+
+That release is the single source of the final, frozen competition data. It
+contains three assets:
+
+| Asset | What it is |
+|---|---|
+| `catalog.jsonl.gz` | The 50,000-product frozen catalog (Amazon Reviews 2023, `Clothing_Shoes_and_Jewelry`), gzip-compressed (~19 MB; ~58 MB unpacked) |
+| `SHA256SUMS` | SHA-256 checksums for `catalog.jsonl.gz` and `techjam-participant-kit.zip` |
+| `techjam-participant-kit.zip` | The full kit (catalog + starter package + checksums) as one archive |
+
+You only need `catalog.jsonl.gz`. From the repo root:
 
 ```bash
+# 1. Download the catalog and the checksum file
+curl -L -O https://github.com/TechJam2026/techjam-conversational-search/releases/download/participant-kit/catalog.jsonl.gz
+curl -L -O https://github.com/TechJam2026/techjam-conversational-search/releases/download/participant-kit/SHA256SUMS
+
+# 2. Verify the download BEFORE unpacking (checksum is on the .gz, not the .jsonl)
+shasum -a 256 -c SHA256SUMS --ignore-missing
+#   expected: catalog.jsonl.gz: OK
+#   (07fd142631fd6b03e2b4d09988c3eb7d53720e9d57010c79db48eeaada50a8f8)
+
+# 3. Unpack into data/
 gzip -dk catalog.jsonl.gz
 mv catalog.jsonl data/catalog.jsonl
+
+# 4. Sanity check: 50000 lines
+wc -l data/catalog.jsonl
 ```
 
-`data/public_set.jsonl` (200 labeled development sessions) is already included.
+`.gitignore` already excludes `data/catalog.jsonl`, so it will not be committed.
+`data/public_set.jsonl` (200 labeled development sessions) is the only session
+data used here and **is** included in this repo. The 800 private evaluation
+sessions are held by the organizer and are not needed to reproduce the numbers
+below.
 
 ## Steps to Reproduce Our Results
 
