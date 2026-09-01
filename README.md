@@ -1,6 +1,6 @@
 # 4. Shopping Copilot "TikTalk": AI Conversational Search and Recommendations
 
-Team **MAI Insight** · TikTok TechJam 2026 · Track 4: Shopping Copilot
+Team **MAIn Insight** · TikTok TechJam 2026 · Track 4: Shopping Copilot
 
 A conversational shopping agent that recovers a customer's hidden target product
 within at most 10 turns by asking useful clarification questions and re-ranking a
@@ -148,7 +148,7 @@ pool, then (4) cross-session profiles.
 
 ## Team Contributions
 
-Team **MAI Insight** — five members (anonymized).
+Team **MAIn Insight** — five members (anonymized).
 
 | Members | Contribution |
 |---|---|
